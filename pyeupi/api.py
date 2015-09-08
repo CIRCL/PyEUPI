@@ -20,6 +20,11 @@ class PyEUPI(object):
              'content-type': 'application/json',
              'Authorization': 'Token {}'.format(auth_token)})
 
+    def search_url(self, url):
+        path = '/api/v1/urls/?url={}'.format(url)
+        response = self.session.get(urljoin(self.url, path), verify=False)
+        return response.json()
+
     def get_url(self, itemid=None):
         path = '/api/v1/urls/'
         if itemid is not None:

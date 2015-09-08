@@ -11,17 +11,21 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Query Phishing Initiative service.')
     parser.add_argument("--url", default='https://fr.dev.phishing-initiative.net', help='URL where the service is running (no path).')
     g = parser.add_mutually_exclusive_group(required=True)
-    g.add_argument('-u', '--urls', type=int, help='Query a URL id (if 0, returns the first page of urls)')
+    g.add_argument('-u', '--urls', help='Query a URL. Integer means URL ID, a string search the URL in the database. If 0, it returns the first page of urls.')
     g.add_argument('-s', '--submissions', type=int, help='Query your submissions (if 0, returns the first page of submissions)')
     g.add_argument('-p', '--post', help='URL to submit')
     args = parser.parse_args()
 
     p = PyEUPI(authkey, args.url)
     if args.urls is not None:
-        if args.urls == 0:
-            response = p.get_url()
-        else:
-            response = p.get_url(args.urls)
+        try:
+            uid = int(args.urls)
+            if args.urls == 0:
+                response = p.get_url()
+            else:
+                response = p.get_url(uid)
+        except:
+            response = p.search_url(args.urls)
 
     elif args.submissions is not None:
         if args.submissions == 0:
