@@ -9,7 +9,7 @@ authkey = ''
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Query Phishing Initiative service.')
-    parser.add_argument("--url", default='https://fr.dev.phishing-initiative.net', help='URL where the service is running (no path).')
+    parser.add_argument("--url", default='https://phishing-initiative.fr', help='URL where the service is running (no path).')
     g = parser.add_mutually_exclusive_group(required=True)
     g.add_argument('-u', '--urls', help='Query a URL. Integer means URL ID, a string search the URL in the database. If 0, it returns the first page of urls.')
     g.add_argument('-s', '--submissions', type=int, help='Query your submissions (if 0, returns the first page of submissions)')
