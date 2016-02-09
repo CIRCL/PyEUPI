@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='pyeupi',
-    version='0.3',
+    version='0.9',
     author='Raphaël Vinot',
     author_email='raphael.vinot@circl.lu',
     maintainer='Raphaël Vinot',
@@ -14,7 +14,7 @@ setup(
     scripts=['bin/pyeupi'],
     classifiers=[
         'License :: OSI Approved :: BSD License',
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Environment :: Console',
         'Intended Audience :: Science/Research',
         'Intended Audience :: Telecommunications Industry',

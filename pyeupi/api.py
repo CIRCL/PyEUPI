@@ -22,7 +22,7 @@ class PyEUPI(object):
             {'Accept': 'application/json',
              'Authorization': 'Token {}'.format(auth_token)})
 
-    def _get(self, url, path, query):
+    def _get(self, url, path, query=[]):
         to_return = {}
         full_url = urljoin(url, path.format(urlencode(query)))
         if self.debug:
@@ -33,14 +33,15 @@ class PyEUPI(object):
             if isinstance(r, list):
                 # The output if the API isn't consistant
                 to_return.update({'results': r})
+                to_return.update({'count': len(r)})
             else:
                 to_return.update(r)
         except Exception as e:
-            print e
             # If the key doesn't have the rights, the API returns a HTML page, normalizing.
             to_return.update({"status": 400, "message": "Probably unauthorized key, enable debug if needed"})
             if self.debug:
                 to_return.update({'details': response.text})
+                to_return.update({'exception': e})
         return to_return
 
     def _post(self, url, data):
@@ -58,50 +59,8 @@ class PyEUPI(object):
                 to_return.update({'details': response.text})
         return to_return
 
-    def search_url(self, url):
-        path = '/api/v1/urls/?url={}'.format(url)
-        return self._get(self.url, path)
-
-    def get_url(self, itemid=None):
-        path = '/api/v1/urls/'
-        if itemid is not None:
-            path = '{}{}/'.format(path, itemid)
-        return self._get(self.url, path)
-
-    def get_submission(self, itemid=None):
-        path = '/api/v1/submissions/'
-        if itemid is not None:
-            path = '{}{}/'.format(path, itemid)
-        return self._get(self.url, path)
-
-    def lookup(self, url):
-        path = '/api/v1/urls/lookup/?{}'
-        query = [('url', url)]
-        return self._get(self.url, path, query)
-
-    def search(self, url=None, content=None, tag_label=None, tag=None, first_seen_since=None,
-               first_seen_until=None, page=None, page_size=None):
-        path = '/api/v1/urls/search/?{}'
+    def _generic_search_parameters(self, url, tag, tag_label, page, page_size):
         query = []
-        if url:
-            query.append(('url', url))
-        if content:
-            query.append(('content', content))
-        if tag:
-            if tag not in [0, 1, 2]:
-                raise Exception('Tag can only be in 0 (unknown), 1 (phishing), 2 (clean)')
-            query.append(('tag', tag))
-        if tag_label:
-            l = ["unknown", "phishing", "clean"]
-            if tag_label not in l:
-                raise Exception('Tag label can only be in {}'.format(', '.join(l)))
-            query.append(('tag_label', tag_label))
-        if first_seen_since:
-            # TODO: use datetime
-            query.append(('first_seen_since', first_seen_since))
-        if first_seen_until:
-            # TODO: use datetime
-            query.append(('first_seen_until', first_seen_until))
         if page:
             try:
                 page = int(page)
@@ -116,7 +75,105 @@ class PyEUPI(object):
             except:
                 raise Exception('Page size must be an integer')
             query.append(('page_size', page_size))
+        if url:
+            query.append(('url', url))
+        if tag:
+            if tag not in [0, 1, 2]:
+                raise Exception('Tag can only be in 0 (unknown), 1 (phishing), 2 (clean)')
+            query.append(('tag', tag))
+        if tag_label:
+            l = ["unknown", "phishing", "clean"]
+            if tag_label not in l:
+                raise Exception('Tag label can only be in {}'.format(', '.join(l)))
+            query.append(('tag_label', tag_label))
+        return query
+
+    def _expanded_search_parameters(self, tag, tag_label, url, url_exact, country,
+                                    asn, domain, tld, ip_address, ip_range,
+                                    first_seen_before, first_seen_after,
+                                    order_by, page, page_size):
+
+        query = self._generic_search_parameters(url, tag, tag_label, page, page_size)
+        if url_exact:
+            query.append(('url_exact', url_exact))
+        if country:
+            query.append(('country', country))
+        if asn:
+            query.append(('asn', asn))
+        if domain:
+            query.append(('domain', domain))
+        if tld:
+            query.append(('tld', tld))
+        if ip_address:
+            query.append(('ip_address', ip_address))
+        if ip_range:
+            query.append(('ip_range', ip_range))
+        if first_seen_before:
+            query.append(('first_seen_before', first_seen_before))
+        if first_seen_after:
+            query.append(('first_seen_after', first_seen_after))
+        if order_by:
+            l = ["first_seen", "url", "-first_seen", "-url"]
+            if order_by not in l:
+                raise Exception('order_by can only be in {}'.format(', '.join(l)))
+            query.append(('order_by', order_by))
+        return query
+
+    def search_url(self, tag=None, tag_label=None, url=None, url_exact=None,
+                   country=None, asn=None, domain=None, tld=None, ip_address=None,
+                   ip_range=None, first_seen_before=None, first_seen_after=None,
+                   order_by=None, page=None, page_size=50):
+        path = '/api/v1/urls/?{}'
+        query = self._expanded_search_parameters(tag, tag_label, url, url_exact,
+                                                 country, asn, domain, tld, ip_address,
+                                                 ip_range, first_seen_before, first_seen_after,
+                                                 order_by, page, page_size)
         return self._get(self.url, path, query)
+
+    def get_url(self, itemid):
+        path = '/api/v1/urls/{}/'.format(itemid)
+        return self._get(self.url, path)
+
+    def search(self, url=None, content=None, tag_label=None, tag=None, first_seen_since=None,
+               first_seen_until=None, page=None, page_size=50):
+        path = '/api/v1/urls/search/?{}'
+        query = self._generic_search_parameters(url, tag, tag_label, page, page_size)
+        if first_seen_since:
+            # TODO: use datetime
+            query.append(('first_seen_since', first_seen_since))
+        if first_seen_until:
+            # TODO: use datetime
+            query.append(('first_seen_until', first_seen_until))
+        if content:
+            query.append(('content', content))
+        return self._get(self.url, path, query)
+
+    def lookup(self, url):
+        path = '/api/v1/urls/lookup/?{}'
+        query = [('url', url)]
+        return self._get(self.url, path, query)
+
+    # ############# Submissions #############
+
+    def search_submissions(self, submitted_before=None, submitted_after=None,
+                           order_by=None, tag=None, tag_label=None, url=None,
+                           url_exact=None, country=None, asn=None, domain=None,
+                           tld=None, ip_address=None, ip_range=None, page_size=50,
+                           first_seen_before=None, first_seen_after=None, page=None):
+        path = '/api/v1/submissions/?{}'
+        query = self._expanded_search_parameters(tag, tag_label, url, url_exact,
+                                                 country, asn, domain, tld, ip_address,
+                                                 ip_range, first_seen_before, first_seen_after,
+                                                 order_by, page, page_size)
+        if submitted_before:
+            query.append(('submitted_before', submitted_before))
+        if submitted_after:
+            query.append(('submitted_after', submitted_after))
+        return self._get(self.url, path, query)
+
+    def get_submission(self, itemid):
+        path = '/api/v1/submissions/{}/'.format(itemid)
+        return self._get(self.url, path)
 
     def post_submission(self, url, comment='', notify=False, tag=0):
         if tag not in [0, 1, 2]:

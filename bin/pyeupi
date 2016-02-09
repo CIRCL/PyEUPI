@@ -23,7 +23,7 @@ if __name__ == '__main__':
         try:
             uid = int(args.urls)
             if args.urls == 0:
-                response = p.get_url()
+                response = p.get_url('')
             else:
                 response = p.get_url(uid)
         except:
@@ -31,11 +31,11 @@ if __name__ == '__main__':
 
     elif args.submissions is not None:
         if args.submissions == 0:
-            response = p.get_submission()
+            response = p.get_submission('')
         else:
             response = p.get_submission(args.submissions)
 
     elif args.post is not None:
         response = p.post_submission(args.post)
 
-    print json.dumps(response)
+    print(json.dumps(response))
