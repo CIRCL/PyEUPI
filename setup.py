@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='pyeupi',
-    version='0.9',
+    version='1.0',
     author='Raphaël Vinot',
     author_email='raphael.vinot@circl.lu',
     maintainer='Raphaël Vinot',
