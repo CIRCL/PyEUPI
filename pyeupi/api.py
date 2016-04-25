@@ -2,7 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import json
-import requests
+try:
+    import requests
+    HAS_REQUESTS = True
+except ImportError:
+    HAS_REQUESTS = False
+
 try:
     from urllib.parse import urljoin, urlencode
 except ImportError:
@@ -16,6 +21,9 @@ class PyEUPI(object):
                  verify_ssl=True, debug=False):
         self.url = url
         self.debug = debug
+
+        if not HAS_REQUESTS:
+            raise ImportError('Python requests module required.')
 
         self.session = requests.Session()
         self.session.verify = verify_ssl
