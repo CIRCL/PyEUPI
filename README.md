@@ -2,6 +2,7 @@ Client API for EUPI
 ===================
 
 [![Build Status](https://travis-ci.org/CIRCL/PyEUPI.svg?branch=master)](https://travis-ci.org/CIRCL/PyEUPI)
+[![Documentation Status](https://readthedocs.org/projects/pyeupi/badge/?version=latest)](http://pyeupi.readthedocs.org/en/latest/?badge=latest)
 
 Client API to query the Phishing Initiative service.
 
