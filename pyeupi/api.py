@@ -2,34 +2,20 @@
 # -*- coding: utf-8 -*-
 
 import json
-try:
-    import requests
-    HAS_REQUESTS = True
-except ImportError:
-    HAS_REQUESTS = False
-
-try:
-    from urllib.parse import urljoin, urlencode
-except ImportError:
-    from urlparse import urljoin
-    from urllib import urlencode
+import requests
+from urllib.parse import urljoin, urlencode
 
 
 class PyEUPI(object):
 
-    def __init__(self, auth_token, url='https://phishing-initiative.fr',
-                 verify_ssl=True, debug=False):
+    def __init__(self, auth_token, url='https://phishing-initiative.fr', verify_ssl=True, debug=False):
         self.url = url
         self.debug = debug
 
-        if not HAS_REQUESTS:
-            raise ImportError('Python requests module required.')
-
         self.session = requests.Session()
         self.session.verify = verify_ssl
-        self.session.headers.update(
-            {'Accept': 'application/json',
-             'Authorization': 'Token {}'.format(auth_token)})
+        self.session.headers.update({'Accept': 'application/json',
+                                     'Authorization': 'Token {}'.format(auth_token)})
 
     def _get(self, url, path, query=[]):
         to_return = {}
@@ -48,10 +34,8 @@ class PyEUPI(object):
         except Exception as e:
             # If the key doesn't have the rights
             # the API returns a HTML page, normalizing.
-            to_return.update({
-                "status": 400,
-                "message": "Probably unauthorized key, enable debug if needed"
-            })
+            to_return.update({"status": 400,
+                              "message": "Probably unauthorized key, enable debug if needed"})
             if self.debug:
                 to_return.update({'details': response.text})
                 to_return.update({'exception': e})
@@ -63,51 +47,44 @@ class PyEUPI(object):
         if self.debug:
             to_return.update({'url': full_url})
             to_return.update({'query': data})
-        response = self.session.post(
-            full_url, data=json.dumps(data),
-            headers={'Content-Type': 'application/json'})
+        response = self.session.post(full_url, data=json.dumps(data), headers={'Content-Type': 'application/json'})
         try:
             to_return.update(response.json())
-        except:
+        except Exception:
             # If the key doesn't have the rights
             # the API returns a HTML page, normalizing.
-            to_return.update({
-                "status": 400,
-                "message": "Probably unauthorized key, enable debug if needed"
-            })
+            to_return.update({"status": 400,
+                              "message": "Probably unauthorized key, enable debug if needed"})
             if self.debug:
                 to_return.update({'details': response.text})
         return to_return
 
-    def _generic_search_parameters(self, url=None, tag=None, tag_label=None,
-                                   page=None, page_size=None):
+    def _generic_search_parameters(self, url=None, tag=None, tag_label=None, page=None, page_size=None):
         query = []
         if page:
             try:
                 page = int(page)
-            except:
-                raise Exception('Page must be an integer')
+            except Exception:
+                raise Exception(f'Page must be an integer - {page}')
             query.append(('page', page))
         if page_size:
             try:
                 page_size = int(page_size)
                 if page_size > 50:
                     Exception('Page size must be <= 50')
-            except:
-                raise Exception('Page size must be an integer')
+            except Exception:
+                raise Exception(f'Page size must be an integer - {page_size}')
             query.append(('page_size', page_size))
         if url:
             query.append(('url', url))
         if tag:
             if tag not in [0, 1, 2]:
-                raise Exception('Tag can only be in 0 (unknown), '
-                                '1 (phishing), 2 (clean)')
+                raise Exception(f'Tag can only be in 0 (unknown), 1 (phishing), 2 (clean) - {tag}')
             query.append(('tag', tag))
         if tag_label:
-            l = ["unknown", "phishing", "clean"]
-            if tag_label not in l:
-                raise Exception('Tag label can only be in {}'.format(
-                    ', '.join(l)))
+            labels = ["unknown", "phishing", "clean"]
+            if tag_label not in labels:
+                raise Exception('Tag label can only be in {} - {}'.format(', '.join(labels), tag_label))
             query.append(('tag_label', tag_label))
         return query
 
@@ -115,15 +92,11 @@ class PyEUPI(object):
                                     url_exact=None, country=None, asn=None,
                                     domain=None, language=None, tld=None,
                                     ip_address=None, ip_range=None,
-                                    first_seen_before=None,
-                                    first_seen_after=None,
-                                    last_tagged_before=None,
-                                    last_tagged_after=None,
+                                    first_seen_before=None, first_seen_after=None,
+                                    last_tagged_before=None, last_tagged_after=None,
                                     order_by=None, page=None, page_size=None):
 
-        query = self._generic_search_parameters(url=url, tag=tag,
-                                                tag_label=tag_label, page=page,
-                                                page_size=page_size)
+        query = self._generic_search_parameters(url=url, tag=tag, tag_label=tag_label, page=page, page_size=page_size)
         if url_exact:
             query.append(('url_exact', url_exact))
         if country:
@@ -149,10 +122,9 @@ class PyEUPI(object):
         if last_tagged_after:
             query.append(('last_tagged_after', last_tagged_after))
         if order_by:
-            l = ["first_seen", "url", "-first_seen", "-url"]
-            if order_by not in l:
-                raise Exception('order_by can only be in {}'.format(
-                    ', '.join(l)))
+            order_opts = ["first_seen", "url", "-first_seen", "-url"]
+            if order_by not in order_opts:
+                raise Exception('order_by can only be in {} - {}'.format(', '.join(order_opts), order_by))
             query.append(('order_by', order_by))
         return query
 
@@ -182,9 +154,7 @@ class PyEUPI(object):
                first_seen_after=None, first_seen_before=None, page=None,
                page_size=50):
         path = '/api/v1/urls/search/?{}'
-        query = self._generic_search_parameters(url=url, tag=tag,
-                                                tag_label=tag_label, page=page,
-                                                page_size=page_size)
+        query = self._generic_search_parameters(url=url, tag=tag, tag_label=tag_label, page=page, page_size=page_size)
         if first_seen_after:
             # TODO: use datetime.isoformat()
             query.append(('first_seen_after', first_seen_after))
@@ -231,8 +201,7 @@ class PyEUPI(object):
 
     def post_submission(self, url, comment='', notify=False, tag=0):
         if tag not in [0, 1, 2]:
-            raise Exception('Tag can only be in 0 (unknown), '
-                            '1 (phishing), 2 (clean)')
+            raise Exception(f'Tag can only be in 0 (unknown), 1 (phishing), 2 (clean) - {tag}')
         query = {'url': url, 'comment': comment, 'notify': notify, 'tag': tag}
         path = '/api/v1/submissions/'
         return self._post(self.url, path, query)
