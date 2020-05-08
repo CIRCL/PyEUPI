@@ -11,7 +11,7 @@ setup(
     url='https://github.com/CIRCL/PyEUPI',
     description='Python API for the European Union anti-phishing initiative.',
     packages=['pyeupi'],
-    scripts=['bin/pyeupi'],
+    entry_points={"console_scripts": ["pyeupi = pyeupi:main"]},
     classifiers=[
         'License :: OSI Approved :: BSD License',
         'Development Status :: 4 - Beta',
