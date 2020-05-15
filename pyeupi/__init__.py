@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from .api import PyEUPI
 import json
 import argparse
+
+from .api import PyEUPI
 
 
 def main():
@@ -16,6 +17,7 @@ def main():
     g.add_argument('-u', '--urls', help='Query a URL. Integer means URL ID, a string search the URL in the database. If 0, it returns the first page of urls.')
     g.add_argument('-s', '--submissions', type=int, help='Query your submissions (if 0, returns the first page of submissions)')
     g.add_argument('-p', '--post', help='URL to submit')
+    g.add_argument('-t', '--tag', type=int, help='URL status. 0 = unknown, 1 = phishing, 2 = clean.')
     args = parser.parse_args()
 
     p = PyEUPI(args.key, args.url, args.not_verify, args.debug)
@@ -27,7 +29,7 @@ def main():
             else:
                 response = p.get_url(uid)
         except Exception:
-            response = p.search_url(args.urls)
+            response = p.search_url(url=args.urls)
 
     elif args.submissions is not None:
         if args.submissions == 0:
@@ -37,5 +39,7 @@ def main():
 
     elif args.post is not None:
         response = p.post_submission(args.post)
+    elif args.tag is not None:
+        response = p.search_url(tag=args.tag, order_by='-first_seen')
 
     print(json.dumps(response, ensure_ascii=False))

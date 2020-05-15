@@ -10,11 +10,12 @@ python:
 dist: trusty
 
 install:
-    - pip install -U pip
-    - python setup.py install
+    - pip install poetry
+    - poetry install
 
 script:
-    - pyeupi -h
+    - poetry run pyeupi -h
+    - portry run mypy .
 
 notifications:
     email:

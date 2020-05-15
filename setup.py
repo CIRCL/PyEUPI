@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from setuptools import setup
+from setuptools import setup  # type: ignore
 
 setup(
     name='pyeupi',
-    version='1.0',
+    version='1.1',
     author='Raphaël Vinot',
     author_email='raphael.vinot@circl.lu',
     maintainer='Raphaël Vinot',
@@ -14,11 +14,10 @@ setup(
     entry_points={"console_scripts": ["pyeupi = pyeupi:main"]},
     classifiers=[
         'License :: OSI Approved :: BSD License',
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
         'Intended Audience :: Science/Research',
         'Intended Audience :: Telecommunications Industry',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Topic :: Security',
         'Topic :: Internet',
