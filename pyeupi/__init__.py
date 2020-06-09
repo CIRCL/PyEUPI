@@ -13,6 +13,7 @@ def main():
     parser.add_argument("--key", required=True, help='Authorization key to query the service.')
     parser.add_argument('--debug', action='store_true', help='Enable debug')
     parser.add_argument('--not_verify', default=True, action='store_false', help='Verify SSL certificate')
+    parser.add_argument('-f', '--full_text_search', default=False, action='store_true', help='Full text search on a partial URL')
     g = parser.add_mutually_exclusive_group(required=True)
     g.add_argument('-u', '--urls', help='Query a URL. Integer means URL ID, a string search the URL in the database. If 0, it returns the first page of urls.')
     g.add_argument('-s', '--submissions', type=int, help='Query your submissions (if 0, returns the first page of submissions)')
@@ -22,14 +23,16 @@ def main():
 
     p = PyEUPI(args.key, args.url, args.not_verify, args.debug)
     if args.urls is not None:
-        try:
+        if args.urls.isdigit():
             uid = int(args.urls)
             if args.urls == 0:
                 response = p.get_url('')
             else:
                 response = p.get_url(uid)
-        except Exception:
-            response = p.search_url(url=args.urls)
+        elif args.full_text_search:
+            response = p.search_url(url=args.urls, order_by='-first_seen')
+        else:
+            response = p.lookup(url=args.urls)
 
     elif args.submissions is not None:
         if args.submissions == 0:
