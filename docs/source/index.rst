@@ -20,13 +20,13 @@ It's used for several purposes, like:
 Installation
 ============
 
-Available for Python2.7 and Python3.4
+Available for Python3.8+
 
 From the repository:
 
 ::
 
-   python setup.py install
+   pip install -e .
 
 Or via pip:
 
