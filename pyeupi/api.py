@@ -20,7 +20,7 @@ class InvalidSearchQuery(EUPIException):
 
 class PyEUPI(object):
 
-    def __init__(self, auth_token: str, url: str='https://phishing-initiative.fr',
+    def __init__(self, auth_token: str, url: str='https://phishing-initiative.eu',
                  verify_ssl: bool=True, debug: bool=False):
         self.url: str = url
         self.debug: bool = debug
